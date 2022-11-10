@@ -116,6 +116,9 @@ async function run() {
             res.send(reviews)
         })
         app.get('/myreviews/:id', verifyJWT, async (req, res) => {
+            const decoded = req.decoded;
+            console.log(decoded);
+
             const id = req.params.id;
             console.log(id)
             const query = {
