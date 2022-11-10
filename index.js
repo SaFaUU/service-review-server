@@ -24,6 +24,11 @@ async function run() {
 
         app.get('/', async (req, res) => {
             const cursor = userCollection.find({})
+            const services = await cursor.limit(3).toArray();
+            res.send(services)
+        })
+        app.get('/alltours', async (req, res) => {
+            const cursor = userCollection.find({})
             const services = await cursor.toArray();
             res.send(services)
         })
