@@ -13,9 +13,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 async function run() {
     try {
-        app.get('/addtour', (req, res) => {
-            res.send(uri)
+        const userCollection = client.db("serviceReview").collection('services');
+        app.post('/addservice', async (req, res) => {
+            const serviceDetails = req.body;
+            console.log(serviceDetails)
+            const result = await userCollection.insertOne(serviceDetails);
+            console.log(result)
+
         })
+
+        app.get('/', async (req, res) => {
+            const cursor = userCollection.find({})
+            const services = await cursor.toArray();
+            res.send(services)
+        })
+
     }
     catch {
 
