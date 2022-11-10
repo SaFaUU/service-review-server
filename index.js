@@ -13,6 +13,23 @@ app.use(express.json());
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1cmhy5v.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        res.status(401).send({ message: 'Unauthorized Access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            res.status(401).send({ message: 'Forbidden Access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
+
 async function run() {
     try {
         const serviceCollection = client.db("serviceReview").collection('services');
@@ -90,17 +107,25 @@ async function run() {
             const query = {
                 postID: id
             }
-            const cursor = reviewCollection.find(query)
+            const options = {
+                sort: { timestamp: -1 },
+            };
+
+            const cursor = reviewCollection.find(query, options)
             const reviews = await cursor.toArray();
             res.send(reviews)
         })
-        app.get('/myreviews/:id', async (req, res) => {
+        app.get('/myreviews/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             console.log(id)
             const query = {
                 userID: id
             }
-            const cursor = reviewCollection.find(query)
+            const options = {
+                sort: { timestamp: -1 },
+            };
+
+            const cursor = reviewCollection.find(query, options)
             const reviews = await cursor.toArray();
             res.send(reviews)
         })
